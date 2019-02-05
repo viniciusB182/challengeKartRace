@@ -8,7 +8,7 @@ const moment_1 = require("moment");
 /**
  * @class
  *
- * Parse a file into {@link DadosDeUmaVolta} structure
+ * Parse a file into {@link DataReader} structure
  */
 class DataReader {
     parse(fileName, encoding) {
@@ -24,7 +24,7 @@ class DataReader {
             .split(/\r?\n/)
             .map(line => line.match(new RegExp('[^\\s*]*[^\\s*]', 'g')))
             .reduce((acc, line) => {
-            if (!line) {
+            if (!line || line[3] === "Volta") {
                 return acc;
             }
             const lapLog = {

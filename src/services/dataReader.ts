@@ -5,7 +5,7 @@ import { duration } from 'moment';
 /**
  * @class
  *
- * Parse a file into {@link DadosDeUmaVolta} structure
+ * Parse a file into {@link DataReader} structure
  */
 export class DataReader {
 
@@ -26,7 +26,7 @@ export class DataReader {
             .map(line => line.match(new RegExp('[^\\s*]*[^\\s*]', 'g')) as string[]) 
             .reduce((acc: RaceLap[], line: string[]) => {
 
-                if (!line) { return acc; }
+                if (!line || line[3] === "Volta") { return acc; }
 
                 const lapLog: RaceLap = {
                     logHour: duration(line[0]),
