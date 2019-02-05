@@ -1,0 +1,22 @@
+{
+  "name": "kartrace",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.ts",
+    "build": "tsc",
+    "test": "nyc mocha --opts ./mocha.opts"
+  },
+  "author": "Vinicius Lima",
+  "license": "ISC",
+  "dependencies": {
+    "file-system": "^2.2.2",
+    "moment": "^2.24.0",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.21"
+  }
+}
