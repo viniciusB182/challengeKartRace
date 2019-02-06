@@ -12,8 +12,9 @@ class DataProcessor {
     }
     getHighLights() {
         const pilots = this.getAllPilots();
+        const raceStartHour = this.getRaceStartHour();
         const pilotsHighLights = pilots.reduce((acc, pilot) => {
-            const pilotRaceLaps = this.raceLaps.filter(rl => rl.pilotNumber === pilot.pilotNumber);
+            const pilotRaceLaps = this.getPilotRaceLaps(pilot.pilotNumber, raceStartHour);
             const bestLap = this.getBestPilotLap(pilotRaceLaps);
             const raceVelocityAverage = this.getPilotRaceVelocityAverage(pilotRaceLaps);
             const hightLight = {
@@ -26,6 +27,23 @@ class DataProcessor {
             return [...acc, hightLight];
         }, []);
         console.log(pilotsHighLights);
+    }
+    getRaceStartHour() {
+        const firstLaps = this.raceLaps.filter(rl => rl.lapNumber === 1)
+            .map(rl => rl.logHour.clone().subtract(rl.lapTime))
+            .sort((a, b) => a.asMilliseconds() - b.asMilliseconds());
+        return firstLaps[0];
+    }
+    getPilotRaceLaps(pilotNumber, raceStartHour) {
+        const pilotRaceLaps = this.raceLaps.filter(rl => rl.pilotNumber === pilotNumber).sort(rl => rl.lapNumber);
+        pilotRaceLaps.forEach(prl => {
+            if (prl.lapNumber === 1) {
+                const whenPassTheStartLine = prl.logHour.clone().subtract(prl.lapTime);
+                const timeToPassTheStartLine = whenPassTheStartLine.clone().subtract(raceStartHour);
+                prl.lapTime.subtract(timeToPassTheStartLine);
+            }
+        });
+        return pilotRaceLaps;
     }
     getAllPilots() {
         const pilots = this.raceLaps.reduce((acc, raceLap) => {
@@ -54,9 +72,9 @@ class DataProcessor {
         const velocityAverages = pilotRaceLaps.reduce((acc, pilotRaceLap) => {
             return [...acc, pilotRaceLap.lapAverageVelocity];
         }, []);
-        return this.calculateRaceVelocityAverage(velocityAverages);
+        return this.calculatePilotRaceVelocityAverage(velocityAverages);
     }
-    calculateRaceVelocityAverage(velocityAverages) {
+    calculatePilotRaceVelocityAverage(velocityAverages) {
         const total = velocityAverages.reduce((acc, velocityAverage) => {
             return acc + velocityAverage;
         });

@@ -15,9 +15,10 @@ export class DataProcessor {
 
     public getHighLights() {
         const pilots = this.getAllPilots();
+        const raceStartHour = this.getRaceStartHour();
 
         const pilotsHighLights: HighLight[] = pilots.reduce((acc: HighLight[], pilot: Pilot) => {
-            const pilotRaceLaps = this.raceLaps.filter(rl => rl.pilotNumber === pilot.pilotNumber);
+            const pilotRaceLaps = this.getPilotRaceLaps(pilot.pilotNumber, raceStartHour);
 
             const bestLap = this.getBestPilotLap(pilotRaceLaps);
             const raceVelocityAverage = this.getPilotRaceVelocityAverage(pilotRaceLaps);
@@ -26,14 +27,39 @@ export class DataProcessor {
                 pilotNumber: pilot.pilotNumber,
                 pilotName: pilot.pilotName,
                 bestLap: bestLap,
+                worstLap: duration(99999999),
                 raceAverageVelocity: raceVelocityAverage,
-                timeAfterTheWinner: duration(99999999)
+                timeAfterTheWinner: duration(99999999),
             };
 
             return [...acc, hightLight]
         }, [] as HighLight[]);
 
         console.log(pilotsHighLights);
+    }
+
+    private getRaceStartHour(): Duration {
+        const firstLaps = this.raceLaps.filter(rl => rl.lapNumber === 1)
+            .map(rl => rl.logHour.clone().subtract(rl.lapTime))
+            .sort((a, b) => a.asMilliseconds() - b.asMilliseconds());
+
+        return firstLaps[0];
+    }
+
+    private getPilotRaceLaps(pilotNumber: string, raceStartHour: Duration): RaceLap[] {
+        const pilotRaceLaps = this.raceLaps.filter(rl => rl.pilotNumber === pilotNumber).sort(rl => rl.lapNumber);
+
+        pilotRaceLaps.forEach(prl => {
+            if (prl.lapNumber === 1) {
+                const whenPassTheStartLine = prl.logHour.clone().subtract(prl.lapTime);
+
+                const timeToPassTheStartLine = whenPassTheStartLine.clone().subtract(raceStartHour);
+
+                prl.lapTime.subtract(timeToPassTheStartLine);
+            }
+        });
+
+        return pilotRaceLaps;
     }
 
     private getAllPilots(): Pilot[] {
@@ -71,10 +97,10 @@ export class DataProcessor {
             return [...acc, pilotRaceLap.lapAverageVelocity];
         }, [] as number[]);
 
-        return this.calculateRaceVelocityAverage(velocityAverages);
+        return this.calculatePilotRaceVelocityAverage(velocityAverages);
     }
 
-    private calculateRaceVelocityAverage(velocityAverages: number[]): number {
+    private calculatePilotRaceVelocityAverage(velocityAverages: number[]): number {
         const total: number = velocityAverages.reduce((acc: number, velocityAverage: number) => {
             return acc + velocityAverage;
         });

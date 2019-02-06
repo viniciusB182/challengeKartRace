@@ -6,7 +6,8 @@ import { Duration } from 'moment';
  * Interface for the HighLights of a Pilot
  */
 export interface HighLight extends Pilot {
-    bestLap: Duration;
+	bestLap: Duration;
+	worstLap: Duration;
 	raceAverageVelocity: number;
-	timeAfterTheWinner: Duration
+	timeAfterTheWinner: Duration;
 }
