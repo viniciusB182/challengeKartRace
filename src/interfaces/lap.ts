@@ -2,7 +2,7 @@ import { Duration } from 'moment';
 
 /**
  * @interface
- * Interface para volta
+ * Interface for a Lap
  */
 export interface Lap {
     lapTime: Duration;

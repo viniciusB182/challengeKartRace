@@ -9,6 +9,5 @@ const dataProcessor_1 = require("./services/dataProcessor");
 const fileName = path_1.default.join(path_1.default.dirname(__dirname), 'logs', 'raceLog.txt');
 const raceData = new dataReader_1.DataReader().parse(fileName, 'utf-8');
 const dataProcessor = new dataProcessor_1.DataProcessor(raceData);
-const x = dataProcessor.getAllPilots();
-console.log(x);
+dataProcessor.getHighLights();
 //# sourceMappingURL=index.js.map
