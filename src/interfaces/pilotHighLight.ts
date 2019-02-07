@@ -5,9 +5,10 @@ import { Duration } from 'moment';
  * @interface
  * Interface for the HighLights of a Pilot
  */
-export interface HighLight extends Pilot {
+export interface PilotHighLight extends Pilot {
 	bestLap: Duration;
-	worstLap: Duration;
+	arrivalPosition?: string;
 	raceAverageVelocity: number;
-	timeAfterTheWinner: Duration;
+	raceTotalTime: Duration;
+	timeAfterTheWinner?: Duration;
 }

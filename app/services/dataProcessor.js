@@ -15,14 +15,15 @@ class DataProcessor {
         const raceStartHour = this.getRaceStartHour();
         const pilotsHighLights = pilots.reduce((acc, pilot) => {
             const pilotRaceLaps = this.getPilotRaceLaps(pilot.pilotNumber, raceStartHour);
-            const bestLap = this.getBestPilotLap(pilotRaceLaps);
-            const raceVelocityAverage = this.getPilotRaceVelocityAverage(pilotRaceLaps);
+            const pilotbestLap = this.getPilotBestLap(pilotRaceLaps);
+            const pilotRaceTotalTime = this.getPilotRaceTotalTime(pilotRaceLaps);
+            const pilotVelocityAverage = this.getPilotRaceVelocityAverage(pilotRaceLaps);
             const hightLight = {
                 pilotNumber: pilot.pilotNumber,
                 pilotName: pilot.pilotName,
-                bestLap: bestLap,
-                raceAverageVelocity: raceVelocityAverage,
-                timeAfterTheWinner: moment_1.duration(99999999)
+                bestLap: pilotbestLap,
+                raceTotalTime: pilotRaceTotalTime,
+                raceAverageVelocity: pilotVelocityAverage
             };
             return [...acc, hightLight];
         }, []);
@@ -33,6 +34,12 @@ class DataProcessor {
             .map(rl => rl.logHour.clone().subtract(rl.lapTime))
             .sort((a, b) => a.asMilliseconds() - b.asMilliseconds());
         return firstLaps[0];
+    }
+    getPilotRaceTotalTime(pilotRaceLaps) {
+        const totalTime = pilotRaceLaps.reduce((acc, prl) => {
+            return moment_1.duration(acc).add(prl.lapTime);
+        }, {});
+        return totalTime;
     }
     getPilotRaceLaps(pilotNumber, raceStartHour) {
         const pilotRaceLaps = this.raceLaps.filter(rl => rl.pilotNumber === pilotNumber).sort(rl => rl.lapNumber);
@@ -59,7 +66,7 @@ class DataProcessor {
         }, []);
         return pilots;
     }
-    getBestPilotLap(pilotRaceLaps) {
+    getPilotBestLap(pilotRaceLaps) {
         let bestLapTime = moment_1.duration(99999999);
         pilotRaceLaps.forEach(lap => {
             if (lap.lapTime < bestLapTime) {
