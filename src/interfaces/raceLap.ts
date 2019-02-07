@@ -9,3 +9,5 @@ import { Duration } from 'moment';
 export interface RaceLap extends Pilot, Lap {
     logHour: Duration;
 }
+
+export type PilotRaceLaps = { raceLaps: RaceLap[], totalNumberOfLaps: number };

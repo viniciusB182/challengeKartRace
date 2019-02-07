@@ -1,6 +1,7 @@
-import { RaceLap } from './../interfaces/raceLap';
 import fs from 'fs';
+import path from 'path';
 import { duration } from 'moment';
+import { RaceLap } from './../interfaces/raceLap';
 
 /**
  * @class
@@ -9,7 +10,15 @@ import { duration } from 'moment';
  */
 export class DataReader {
 
-    public parse(fileName: string, encoding: string): RaceLap[] {
+    public getRaceData(): RaceLap[] {
+        const fileName = path.join(path.dirname(__dirname), '../logs', 'raceLog.txt');
+
+        const raceData = new DataReader().parse(fileName, 'utf-8');
+
+        return raceData;
+    }
+
+    private parse(fileName: string, encoding: string): RaceLap[] {
         const file = this.readDataFromFile(fileName, encoding);
         const lines = this.parseFile(file);
 
@@ -23,7 +32,7 @@ export class DataReader {
     private parseFile(file: string): RaceLap[] {
         const lines: RaceLap[] = file
             .split(/\r?\n/)
-            .map(line => line.match(new RegExp('[^\\s*]*[^\\s*]', 'g')) as string[]) 
+            .map(line => line.match(new RegExp('[^\\s*]*[^\\s*]', 'g')) as string[])
             .reduce((acc: RaceLap[], line: string[]) => {
 
                 if (!line || line[3] === "Volta") { return acc; }

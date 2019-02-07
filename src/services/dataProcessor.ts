@@ -1,6 +1,7 @@
 import { PilotHighLight } from '../interfaces/pilotHighLight';
+import { RaceHighLight, BestRaceLap } from '../interfaces/raceHighLight';
 import { Pilot } from './../interfaces/pilot';
-import { RaceLap } from './../interfaces/raceLap';
+import { RaceLap, PilotRaceLaps } from './../interfaces/raceLap';
 import { duration, Duration } from 'moment';
 
 /**
@@ -13,29 +14,38 @@ export class DataProcessor {
     constructor(private readonly raceLaps: RaceLap[]) {
     }
 
-    public getHighLights() {
+    public getHighLights(): RaceHighLight {
         const pilots = this.getAllPilots();
         const raceStartHour = this.getRaceStartHour();
 
         const pilotsHighLights: PilotHighLight[] = pilots.reduce((acc: PilotHighLight[], pilot: Pilot) => {
             const pilotRaceLaps = this.getPilotRaceLaps(pilot.pilotNumber, raceStartHour);
 
-            const pilotbestLap = this.getPilotBestLap(pilotRaceLaps);
-            const pilotRaceTotalTime = this.getPilotRaceTotalTime(pilotRaceLaps);
-            const pilotVelocityAverage = this.getPilotRaceVelocityAverage(pilotRaceLaps);
+            const pilotbestLap = this.getPilotBestLap(pilotRaceLaps.raceLaps);
+            const pilotRaceTotalTime = this.getPilotRaceTotalTime(pilotRaceLaps.raceLaps);
+            const pilotVelocityAverage = this.getPilotRaceVelocityAverage(pilotRaceLaps.raceLaps);
 
             const hightLight: PilotHighLight = {
                 pilotNumber: pilot.pilotNumber,
                 pilotName: pilot.pilotName,
                 bestLap: pilotbestLap,
                 raceTotalTime: pilotRaceTotalTime,
-                raceAverageVelocity: pilotVelocityAverage
+                raceAverageVelocity: pilotVelocityAverage,
+                totalNumberOfLaps: pilotRaceLaps.totalNumberOfLaps
             };
 
-            return [...acc, hightLight]
+            return this.setPilotsTotalTimeAfterWinner(this.setRacePodium([...acc, hightLight]));
+            
         }, [] as PilotHighLight[]);
 
-        console.log(pilotsHighLights);
+        const bestRaceLap = this.getRaceBestLap(pilotsHighLights);
+
+        const raceHighLight = {
+            podium: pilotsHighLights,
+            bestRaceLap: bestRaceLap
+        }
+
+        return raceHighLight;
     }
 
     private getRaceStartHour(): Duration {
@@ -46,6 +56,38 @@ export class DataProcessor {
         return firstLaps[0];
     }
 
+    private getRaceBestLap(pilotsHighLights: PilotHighLight[]): BestRaceLap {
+        let bestRaceLap: BestRaceLap = {
+            pilotName: "",
+            lapTime: duration(99999999)
+        };
+
+        pilotsHighLights.forEach(lap => {
+            if (lap.bestLap < bestRaceLap.lapTime) {
+                bestRaceLap.lapTime = lap.bestLap;
+                bestRaceLap.pilotName = lap.pilotName;
+            }
+        });
+
+        return bestRaceLap;
+    }
+
+    private setRacePodium(pilotsHighLights: PilotHighLight[]) {
+        return pilotsHighLights.sort((a, b) => a.raceTotalTime.asMilliseconds() - b.raceTotalTime.asMilliseconds());
+    }
+
+    private setPilotsTotalTimeAfterWinner(pilotsHighLights: PilotHighLight[]): PilotHighLight[] {
+        pilotsHighLights.forEach(phl => {
+            phl.arrivalPosition = pilotsHighLights.indexOf(phl) + 1;
+
+            if (phl.arrivalPosition != 1 && phl.totalNumberOfLaps === 4) {
+                phl.timeAfterTheWinner = phl.raceTotalTime.clone().subtract(pilotsHighLights[0].raceTotalTime);
+            }
+        });
+
+        return pilotsHighLights;
+    }
+
     private getPilotRaceTotalTime(pilotRaceLaps: RaceLap[]): Duration {
         const totalTime: Duration = pilotRaceLaps.reduce((acc: Duration, prl: RaceLap) => {
             return duration(acc).add(prl.lapTime);
@@ -54,7 +96,7 @@ export class DataProcessor {
         return totalTime;
     }
 
-    private getPilotRaceLaps(pilotNumber: string, raceStartHour: Duration): RaceLap[] {
+    private getPilotRaceLaps(pilotNumber: string, raceStartHour: Duration): PilotRaceLaps {
         const pilotRaceLaps = this.raceLaps.filter(rl => rl.pilotNumber === pilotNumber).sort(rl => rl.lapNumber);
 
         pilotRaceLaps.forEach(prl => {
@@ -67,25 +109,7 @@ export class DataProcessor {
             }
         });
 
-        return pilotRaceLaps;
-    }
-
-    private getAllPilots(): Pilot[] {
-        const pilots: Pilot[] = this.raceLaps.reduce((acc: Pilot[], raceLap: RaceLap) => {
-            const pilot: Pilot = {
-                pilotName: raceLap.pilotName,
-                pilotNumber: raceLap.pilotNumber
-            }
-
-            if (acc.filter(p => p.pilotNumber === pilot.pilotNumber).length) {
-                return acc
-            };
-
-            return [...acc, pilot];
-
-        }, [] as Pilot[]);
-
-        return pilots;
+        return { raceLaps: pilotRaceLaps, totalNumberOfLaps: pilotRaceLaps.length };
     }
 
     private getPilotBestLap(pilotRaceLaps: RaceLap[]): Duration {
@@ -108,6 +132,24 @@ export class DataProcessor {
         return this.calculatePilotRaceVelocityAverage(velocityAverages);
     }
 
+    private getAllPilots(): Pilot[] {
+        const pilots: Pilot[] = this.raceLaps.reduce((acc: Pilot[], raceLap: RaceLap) => {
+            const pilot: Pilot = {
+                pilotName: raceLap.pilotName,
+                pilotNumber: raceLap.pilotNumber
+            }
+
+            if (acc.filter(p => p.pilotNumber === pilot.pilotNumber).length) {
+                return acc
+            };
+
+            return [...acc, pilot];
+
+        }, [] as Pilot[]);
+
+        return pilots;
+    }
+
     private calculatePilotRaceVelocityAverage(velocityAverages: number[]): number {
         const total: number = velocityAverages.reduce((acc: number, velocityAverage: number) => {
             return acc + velocityAverage;
@@ -117,4 +159,5 @@ export class DataProcessor {
 
         return Number(raceVelocityAverage.toFixed(3));
     }
+
 }

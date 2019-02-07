@@ -1,11 +1,13 @@
-import path from 'path';
+
 import { DataReader } from './services/dataReader';
 import { DataProcessor } from './services/dataProcessor';
 
-const fileName = path.join(path.dirname(__dirname), 'logs', 'raceLog.txt');
+const dataReader = new DataReader();
 
-const raceData = new DataReader().parse(fileName, 'utf-8');
+const raceData = dataReader.getRaceData();
 
 const dataProcessor = new DataProcessor(raceData);
 
-dataProcessor.getHighLights();
+const highLights = dataProcessor.getHighLights();
+
+console.log(highLights);

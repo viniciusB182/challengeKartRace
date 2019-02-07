@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const moment_1 = require("moment");
 /**
  * @class
@@ -11,6 +12,11 @@ const moment_1 = require("moment");
  * Parse a file into {@link DataReader} structure
  */
 class DataReader {
+    getRaceData() {
+        const fileName = path_1.default.join(path_1.default.dirname(__dirname), '../logs', 'raceLog.txt');
+        const raceData = new DataReader().parse(fileName, 'utf-8');
+        return raceData;
+    }
     parse(fileName, encoding) {
         const file = this.readDataFromFile(fileName, encoding);
         const lines = this.parseFile(file);

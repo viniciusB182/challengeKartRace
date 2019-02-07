@@ -15,25 +15,56 @@ class DataProcessor {
         const raceStartHour = this.getRaceStartHour();
         const pilotsHighLights = pilots.reduce((acc, pilot) => {
             const pilotRaceLaps = this.getPilotRaceLaps(pilot.pilotNumber, raceStartHour);
-            const pilotbestLap = this.getPilotBestLap(pilotRaceLaps);
-            const pilotRaceTotalTime = this.getPilotRaceTotalTime(pilotRaceLaps);
-            const pilotVelocityAverage = this.getPilotRaceVelocityAverage(pilotRaceLaps);
+            const pilotbestLap = this.getPilotBestLap(pilotRaceLaps.raceLaps);
+            const pilotRaceTotalTime = this.getPilotRaceTotalTime(pilotRaceLaps.raceLaps);
+            const pilotVelocityAverage = this.getPilotRaceVelocityAverage(pilotRaceLaps.raceLaps);
             const hightLight = {
                 pilotNumber: pilot.pilotNumber,
                 pilotName: pilot.pilotName,
                 bestLap: pilotbestLap,
                 raceTotalTime: pilotRaceTotalTime,
-                raceAverageVelocity: pilotVelocityAverage
+                raceAverageVelocity: pilotVelocityAverage,
+                totalNumberOfLaps: pilotRaceLaps.totalNumberOfLaps
             };
-            return [...acc, hightLight];
+            return this.setPilotsTotalTimeAfterWinner(this.setRacePodium([...acc, hightLight]));
         }, []);
-        console.log(pilotsHighLights);
+        const bestRaceLap = this.getRaceBestLap(pilotsHighLights);
+        const raceHighLight = {
+            podium: pilotsHighLights,
+            bestRaceLap: bestRaceLap
+        };
+        return raceHighLight;
     }
     getRaceStartHour() {
         const firstLaps = this.raceLaps.filter(rl => rl.lapNumber === 1)
             .map(rl => rl.logHour.clone().subtract(rl.lapTime))
             .sort((a, b) => a.asMilliseconds() - b.asMilliseconds());
         return firstLaps[0];
+    }
+    getRaceBestLap(pilotsHighLights) {
+        let bestRaceLap = {
+            pilotName: "",
+            lapTime: moment_1.duration(99999999)
+        };
+        pilotsHighLights.forEach(lap => {
+            if (lap.bestLap < bestRaceLap.lapTime) {
+                bestRaceLap.lapTime = lap.bestLap;
+                bestRaceLap.pilotName = lap.pilotName;
+            }
+        });
+        return bestRaceLap;
+    }
+    setRacePodium(pilotsHighLights) {
+        return pilotsHighLights.sort((a, b) => a.raceTotalTime.asMilliseconds() - b.raceTotalTime.asMilliseconds());
+    }
+    setPilotsTotalTimeAfterWinner(pilotsHighLights) {
+        pilotsHighLights.forEach(phl => {
+            phl.arrivalPosition = pilotsHighLights.indexOf(phl) + 1;
+            if (phl.arrivalPosition != 1 && phl.totalNumberOfLaps === 4) {
+                phl.timeAfterTheWinner = phl.raceTotalTime.clone().subtract(pilotsHighLights[0].raceTotalTime);
+            }
+        });
+        return pilotsHighLights;
     }
     getPilotRaceTotalTime(pilotRaceLaps) {
         const totalTime = pilotRaceLaps.reduce((acc, prl) => {
@@ -50,21 +81,7 @@ class DataProcessor {
                 prl.lapTime.subtract(timeToPassTheStartLine);
             }
         });
-        return pilotRaceLaps;
-    }
-    getAllPilots() {
-        const pilots = this.raceLaps.reduce((acc, raceLap) => {
-            const pilot = {
-                pilotName: raceLap.pilotName,
-                pilotNumber: raceLap.pilotNumber
-            };
-            if (acc.filter(p => p.pilotNumber === pilot.pilotNumber).length) {
-                return acc;
-            }
-            ;
-            return [...acc, pilot];
-        }, []);
-        return pilots;
+        return { raceLaps: pilotRaceLaps, totalNumberOfLaps: pilotRaceLaps.length };
     }
     getPilotBestLap(pilotRaceLaps) {
         let bestLapTime = moment_1.duration(99999999);
@@ -80,6 +97,20 @@ class DataProcessor {
             return [...acc, pilotRaceLap.lapAverageVelocity];
         }, []);
         return this.calculatePilotRaceVelocityAverage(velocityAverages);
+    }
+    getAllPilots() {
+        const pilots = this.raceLaps.reduce((acc, raceLap) => {
+            const pilot = {
+                pilotName: raceLap.pilotName,
+                pilotNumber: raceLap.pilotNumber
+            };
+            if (acc.filter(p => p.pilotNumber === pilot.pilotNumber).length) {
+                return acc;
+            }
+            ;
+            return [...acc, pilot];
+        }, []);
+        return pilots;
     }
     calculatePilotRaceVelocityAverage(velocityAverages) {
         const total = velocityAverages.reduce((acc, velocityAverage) => {
