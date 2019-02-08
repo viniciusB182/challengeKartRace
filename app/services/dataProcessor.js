@@ -4,7 +4,7 @@ const moment_1 = require("moment");
 /**
  * @class
  *
- * Parse a file into {@link DataProcessor} structure
+ * Process a file into {@link DataProcessor} structure
  */
 class DataProcessor {
     constructor(raceLaps) {
@@ -60,7 +60,7 @@ class DataProcessor {
     setPilotsTotalTimeAfterWinner(pilotsHighLights) {
         pilotsHighLights.forEach(phl => {
             phl.arrivalPosition = pilotsHighLights.indexOf(phl) + 1;
-            if (phl.arrivalPosition != 1 && phl.totalNumberOfLaps === 4) {
+            if (phl.totalNumberOfLaps === 4) {
                 phl.timeAfterTheWinner = phl.raceTotalTime.clone().subtract(pilotsHighLights[0].raceTotalTime);
             }
         });

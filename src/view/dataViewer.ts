@@ -1,5 +1,5 @@
+import { DataFormatter } from './../services/dataFormatter';
 import { RaceHighLight } from "../interfaces/raceHighLight";
-import { Duration, utc, duration } from "moment";
 
 /**
  * @class
@@ -8,23 +8,40 @@ import { Duration, utc, duration } from "moment";
  */
 export class DataViewer {
 	public viewResults(raceHighLight: RaceHighLight) {
-		const formattedRaceHighLight = raceHighLight.podium.map(pilotPodium => {
+        const dataFormatter = new DataFormatter();
+
+		const formattedPilotsHighLight = raceHighLight.podium.map(pilotPodium => {
+
+            let formattedtimeAfterTheWinner: string;
+
+            if(!pilotPodium.timeAfterTheWinner) {
+                formattedtimeAfterTheWinner = "Não completou a prova";
+            }
+            else if(pilotPodium.arrivalPosition === 1) {
+                formattedtimeAfterTheWinner = "Vencedor";
+            }
+            else {
+                formattedtimeAfterTheWinner = dataFormatter.durationFormatter(pilotPodium.timeAfterTheWinner);
+            }
+
 			return {
-                Piloto: pilotPodium.pilotName,
-                Numero: pilotPodium.pilotNumber,
-                Posicao: pilotPodium.arrivalPosition,
-                TempoTotalDeCorrida: this.durationFormatter(pilotPodium.raceTotalTime),
-                MelhorVolta: this.durationFormatter(pilotPodium.bestLap),
-                VelocidadeMedia: pilotPodium.raceAverageVelocity,
-                TempoDeChegadaAposOVencedor: pilotPodium.timeAfterTheWinner,
-                VoltasCompletas: pilotPodium.totalNumberOfLaps
+                piloto: pilotPodium.pilotName,
+                numero: pilotPodium.pilotNumber,
+                posicao: pilotPodium.arrivalPosition,
+                tempoTotalDeProva: dataFormatter.durationFormatter(pilotPodium.raceTotalTime),
+                melhorVolta: dataFormatter.durationFormatter(pilotPodium.bestLap),
+                velocidadeMedia: pilotPodium.raceAverageVelocity,
+                tempoDeChegadaAposOVencedor: formattedtimeAfterTheWinner,
+                voltasCompletas: pilotPodium.totalNumberOfLaps
 			};
         });
+
+        const formattedRaceHighLight = {
+            melhorVoltaDaProva: `${raceHighLight.bestRaceLap.pilotName} em ${dataFormatter.durationFormatter(raceHighLight.bestRaceLap.lapTime)}`
+        };
         
-		console.table(formattedRaceHighLight);
-    }
-    
-    private durationFormatter(d: Duration) {
-        return `${utc(duration(d).asMilliseconds()).format('m[m] ss[s] SSS[ms]')}`;
+        //TODO Sinalizar informacoes
+        console.table(formattedRaceHighLight);
+		console.table(formattedPilotsHighLight);
     }
 }

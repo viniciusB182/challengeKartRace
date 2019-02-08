@@ -6,7 +6,7 @@ import { RaceLap } from './../interfaces/raceLap';
 /**
  * @class
  *
- * Parse a file into {@link DataReader} structure
+ * Read a file into {@link DataReader} structure
  */
 export class DataReader {
 

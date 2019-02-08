@@ -9,7 +9,7 @@ const moment_1 = require("moment");
 /**
  * @class
  *
- * Parse a file into {@link DataReader} structure
+ * Read a file into {@link DataReader} structure
  */
 class DataReader {
     getRaceData() {
