@@ -9,15 +9,15 @@ const moment_1 = require("moment");
 /**
  * @class
  *
- * Read a file into {@link DataReader} structure
+ * Read a file and parse to a object array structure
  */
 class DataReader {
     getRaceData() {
         const fileName = path_1.default.join(path_1.default.dirname(__dirname), '../logs', 'raceLog.txt');
-        const raceData = new DataReader().parse(fileName, 'utf-8');
+        const raceData = new DataReader().getDataLines(fileName, 'utf-8');
         return raceData;
     }
-    parse(fileName, encoding) {
+    getDataLines(fileName, encoding) {
         const file = this.readDataFromFile(fileName, encoding);
         const lines = this.parseFile(file);
         return lines;

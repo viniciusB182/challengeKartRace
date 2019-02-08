@@ -4,12 +4,16 @@ const moment_1 = require("moment");
 /**
  * @class
  *
- * Process a file into {@link DataProcessor} structure
+ * Process informations of a file
  */
 class DataProcessor {
     constructor(raceLaps) {
         this.raceLaps = raceLaps;
     }
+    /**
+     * Get the race and pilots highLights
+     * @param getHighLights
+     */
     getHighLights() {
         const pilots = this.getAllPilots();
         const raceStartHour = this.getRaceStartHour();
@@ -35,12 +39,78 @@ class DataProcessor {
         };
         return raceHighLight;
     }
+    /**
+     * Get the hour of when the race started
+     * @param getRaceStartHour
+     */
     getRaceStartHour() {
         const firstLaps = this.raceLaps.filter(rl => rl.lapNumber === 1)
             .map(rl => rl.logHour.clone().subtract(rl.lapTime))
             .sort((a, b) => a.asMilliseconds() - b.asMilliseconds());
         return firstLaps[0];
     }
+    /**
+     * Get all laps from an specific pilot
+     * Calculate de real value of the first lap subtracting the time to pass the starting line
+     * @param getPilotRaceLaps
+     */
+    getPilotRaceLaps(pilotNumber, raceStartHour) {
+        const pilotRaceLaps = this.raceLaps.filter(rl => rl.pilotNumber === pilotNumber).sort(rl => rl.lapNumber);
+        pilotRaceLaps.forEach(prl => {
+            if (prl.lapNumber === 1) {
+                const whenPassTheStartLine = prl.logHour.clone().subtract(prl.lapTime);
+                const timeToPassTheStartLine = whenPassTheStartLine.clone().subtract(raceStartHour);
+                prl.lapTime.subtract(timeToPassTheStartLine);
+            }
+        });
+        return { raceLaps: pilotRaceLaps, totalNumberOfLaps: pilotRaceLaps.length };
+    }
+    /**
+     * Get the best lap from an specific pilot
+     * @param getPilotBestLap
+     */
+    getPilotBestLap(pilotRaceLaps) {
+        let bestLapTime = moment_1.duration(99999999);
+        pilotRaceLaps.forEach(lap => {
+            if (lap.lapTime < bestLapTime) {
+                bestLapTime = lap.lapTime;
+            }
+        });
+        return bestLapTime;
+    }
+    /**
+     * Get the race velocity average from an specific pilot
+     * @param getPilotRaceVelocityAverage
+     */
+    getPilotRaceVelocityAverage(pilotRaceLaps) {
+        const velocityAverages = pilotRaceLaps.reduce((acc, pilotRaceLap) => {
+            return [...acc, pilotRaceLap.lapAverageVelocity];
+        }, []);
+        return this.calculatePilotRaceVelocityAverage(velocityAverages);
+    }
+    /**
+     * Get the sum of the time from all laps from an specific pilot
+     * @param getPilotRaceTotalTime
+     */
+    getPilotRaceTotalTime(pilotRaceLaps) {
+        const totalTime = pilotRaceLaps.reduce((acc, prl) => {
+            return moment_1.duration(acc).add(prl.lapTime);
+        }, {});
+        return totalTime;
+    }
+    setPilotsTotalTimeAfterWinner(pilotsHighLights) {
+        pilotsHighLights.forEach(phl => {
+            phl.arrivalPosition = pilotsHighLights.indexOf(phl) + 1;
+            if (phl.totalNumberOfLaps === 4) {
+                phl.timeAfterTheWinner = phl.raceTotalTime.clone().subtract(pilotsHighLights[0].raceTotalTime);
+            }
+        });
+        return pilotsHighLights;
+    }
+    /**
+     * Get the lap with the best time from of all pilots
+     * @param getRaceBestLap
+     */
     getRaceBestLap(pilotsHighLights) {
         let bestRaceLap = {
             pilotName: "",
@@ -54,50 +124,17 @@ class DataProcessor {
         });
         return bestRaceLap;
     }
+    /**
+     * Set the pilotshigh lights by arrival order
+     * @param setRacePodium
+     */
     setRacePodium(pilotsHighLights) {
         return pilotsHighLights.sort((a, b) => a.raceTotalTime.asMilliseconds() - b.raceTotalTime.asMilliseconds());
     }
-    setPilotsTotalTimeAfterWinner(pilotsHighLights) {
-        pilotsHighLights.forEach(phl => {
-            phl.arrivalPosition = pilotsHighLights.indexOf(phl) + 1;
-            if (phl.totalNumberOfLaps === 4) {
-                phl.timeAfterTheWinner = phl.raceTotalTime.clone().subtract(pilotsHighLights[0].raceTotalTime);
-            }
-        });
-        return pilotsHighLights;
-    }
-    getPilotRaceTotalTime(pilotRaceLaps) {
-        const totalTime = pilotRaceLaps.reduce((acc, prl) => {
-            return moment_1.duration(acc).add(prl.lapTime);
-        }, {});
-        return totalTime;
-    }
-    getPilotRaceLaps(pilotNumber, raceStartHour) {
-        const pilotRaceLaps = this.raceLaps.filter(rl => rl.pilotNumber === pilotNumber).sort(rl => rl.lapNumber);
-        pilotRaceLaps.forEach(prl => {
-            if (prl.lapNumber === 1) {
-                const whenPassTheStartLine = prl.logHour.clone().subtract(prl.lapTime);
-                const timeToPassTheStartLine = whenPassTheStartLine.clone().subtract(raceStartHour);
-                prl.lapTime.subtract(timeToPassTheStartLine);
-            }
-        });
-        return { raceLaps: pilotRaceLaps, totalNumberOfLaps: pilotRaceLaps.length };
-    }
-    getPilotBestLap(pilotRaceLaps) {
-        let bestLapTime = moment_1.duration(99999999);
-        pilotRaceLaps.forEach(lap => {
-            if (lap.lapTime < bestLapTime) {
-                bestLapTime = lap.lapTime;
-            }
-        });
-        return bestLapTime;
-    }
-    getPilotRaceVelocityAverage(pilotRaceLaps) {
-        const velocityAverages = pilotRaceLaps.reduce((acc, pilotRaceLap) => {
-            return [...acc, pilotRaceLap.lapAverageVelocity];
-        }, []);
-        return this.calculatePilotRaceVelocityAverage(velocityAverages);
-    }
+    /**
+     * Get all pilots names and number
+     * @param getAllPilots
+     */
     getAllPilots() {
         const pilots = this.raceLaps.reduce((acc, raceLap) => {
             const pilot = {
@@ -112,6 +149,10 @@ class DataProcessor {
         }, []);
         return pilots;
     }
+    /**
+     * Calculate the pilot race velocity average
+     * @param getAllPilots
+     */
     calculatePilotRaceVelocityAverage(velocityAverages) {
         const total = velocityAverages.reduce((acc, velocityAverage) => {
             return acc + velocityAverage;

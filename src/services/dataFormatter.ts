@@ -3,7 +3,7 @@ import { Duration, utc, duration } from "moment";
 /**
  * @class
  *
- * Format a file into {@link DataFormatter} structure
+ * Format Data value types
  */
 export class DataFormatter {
     public durationFormatter(d: Duration): string {

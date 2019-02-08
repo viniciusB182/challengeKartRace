@@ -6,19 +6,19 @@ import { RaceLap } from './../interfaces/raceLap';
 /**
  * @class
  *
- * Read a file into {@link DataReader} structure
+ * Read a file and parse to a object array structure
  */
 export class DataReader {
 
     public getRaceData(): RaceLap[] {
         const fileName = path.join(path.dirname(__dirname), '../logs', 'raceLog.txt');
 
-        const raceData = new DataReader().parse(fileName, 'utf-8');
+        const raceData = new DataReader().getDataLines(fileName, 'utf-8');
 
         return raceData;
     }
 
-    private parse(fileName: string, encoding: string): RaceLap[] {
+    private getDataLines(fileName: string, encoding: string): RaceLap[] {
         const file = this.readDataFromFile(fileName, encoding);
         const lines = this.parseFile(file);
 
