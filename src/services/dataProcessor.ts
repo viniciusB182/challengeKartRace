@@ -125,6 +125,10 @@ export class DataProcessor {
         return totalTime;
     }
 
+    /**
+	 * Set the pilots total time to pass the finishing line after the Winner
+	 * @param setPilotsTotalTimeAfterWinner
+	 */
     private setPilotsTotalTimeAfterWinner(pilotsHighLights: PilotHighLight[]): PilotHighLight[] {
         pilotsHighLights.forEach(phl => {
             phl.arrivalPosition = pilotsHighLights.indexOf(phl) + 1;
@@ -158,7 +162,7 @@ export class DataProcessor {
     }
 
     /**
-	 * Set the pilotshigh lights by arrival order
+	 * Set the pilots highlights by arrival order
 	 * @param setRacePodium
 	 */
     private setRacePodium(pilotsHighLights: PilotHighLight[]) {
