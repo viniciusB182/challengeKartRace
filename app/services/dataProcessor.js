@@ -98,6 +98,10 @@ class DataProcessor {
         }, {});
         return totalTime;
     }
+    /**
+     * Set the pilots total time to pass the finishing line after the Winner
+     * @param setPilotsTotalTimeAfterWinner
+     */
     setPilotsTotalTimeAfterWinner(pilotsHighLights) {
         pilotsHighLights.forEach(phl => {
             phl.arrivalPosition = pilotsHighLights.indexOf(phl) + 1;
@@ -125,11 +129,19 @@ class DataProcessor {
         return bestRaceLap;
     }
     /**
-     * Set the pilotshigh lights by arrival order
+     * Set the pilots highlights by arrival order
      * @param setRacePodium
      */
     setRacePodium(pilotsHighLights) {
-        return pilotsHighLights.sort((a, b) => a.raceTotalTime.asMilliseconds() - b.raceTotalTime.asMilliseconds());
+        const notCompletedTheRace = pilotsHighLights.reduce((acc, pilotHighLight) => {
+            if (pilotHighLight.totalNumberOfLaps < 4) {
+                return [...acc, pilotHighLight];
+            }
+            return acc;
+        }, []);
+        pilotsHighLights.filter(phl => phl.totalNumberOfLaps === 4);
+        pilotsHighLights.sort((a, b) => a.raceTotalTime.asMilliseconds() - b.raceTotalTime.asMilliseconds());
+        return pilotsHighLights.concat(notCompletedTheRace);
     }
     /**
      * Get all pilots names and number

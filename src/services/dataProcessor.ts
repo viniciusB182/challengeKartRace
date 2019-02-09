@@ -166,7 +166,15 @@ export class DataProcessor {
 	 * @param setRacePodium
 	 */
     private setRacePodium(pilotsHighLights: PilotHighLight[]) {
-        return pilotsHighLights.sort((a, b) => a.raceTotalTime.asMilliseconds() - b.raceTotalTime.asMilliseconds());
+        //Separa entre os que completaram e os que não completarama prova
+        const notCompletedTheRace = pilotsHighLights.filter(phl => phl.totalNumberOfLaps < 4);
+        const completedTheRace = pilotsHighLights.filter(phl => phl.totalNumberOfLaps === 4);
+
+        //Ordena os que terminaram a corrida por tempo total de prova
+        completedTheRace.sort((a, b) => a.raceTotalTime.asMilliseconds() - b.raceTotalTime.asMilliseconds());
+
+        //Insere os que não terminaram a prova no final, não os ordenando
+        return completedTheRace.concat(notCompletedTheRace);
     }
 
     /**

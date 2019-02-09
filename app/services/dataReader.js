@@ -12,19 +12,35 @@ const moment_1 = require("moment");
  * Read a file and parse to a object array structure
  */
 class DataReader {
+    /**
+     * Get the formatted data Race
+     * @param getRaceData
+     */
     getRaceData() {
         const fileName = path_1.default.join(path_1.default.dirname(__dirname), '../logs', 'raceLog.txt');
         const raceData = new DataReader().getDataLines(fileName, 'utf-8');
         return raceData;
     }
+    /**
+     * Get data lines values
+     * @param getDataLines
+     */
     getDataLines(fileName, encoding) {
         const file = this.readDataFromFile(fileName, encoding);
         const lines = this.parseFile(file);
         return lines;
     }
+    /**
+     * Read the data from a file
+     * @param readDataFromFile
+     */
     readDataFromFile(fileName, encoding) {
         return fs_1.default.readFileSync(fileName, encoding);
     }
+    /**
+     * Parse the data file to an object array
+     * @param parseFile
+     */
     parseFile(file) {
         const lines = file
             .split(/\r?\n/)

@@ -9,7 +9,10 @@ import { RaceLap } from './../interfaces/raceLap';
  * Read a file and parse to a object array structure
  */
 export class DataReader {
-
+    /**
+	 * Get the formatted data Race
+	 * @param getRaceData
+	 */
     public getRaceData(): RaceLap[] {
         const fileName = path.join(path.dirname(__dirname), '../logs', 'raceLog.txt');
 
@@ -18,6 +21,10 @@ export class DataReader {
         return raceData;
     }
 
+    /**
+	 * Get data lines values
+	 * @param getDataLines
+	 */
     private getDataLines(fileName: string, encoding: string): RaceLap[] {
         const file = this.readDataFromFile(fileName, encoding);
         const lines = this.parseFile(file);
@@ -25,10 +32,18 @@ export class DataReader {
         return lines;
     }
 
+    /**
+	 * Read the data from a file
+	 * @param readDataFromFile
+	 */
     private readDataFromFile(fileName: string, encoding: string): string {
         return fs.readFileSync(fileName, encoding);
     }
 
+    /**
+	 * Parse the data file to an object array
+	 * @param parseFile
+	 */
     private parseFile(file: string): RaceLap[] {
         const lines: RaceLap[] = file
             .split(/\r?\n/)
