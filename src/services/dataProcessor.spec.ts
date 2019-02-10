@@ -92,7 +92,7 @@ describe('dataProcessor', () => {
         lapAverageVelocity: 30,
         logHour: duration(23, 'h').add(1800).add(1800).add(1800),
     }];
-
+    
     it('should process the run data with three pilots and just two finishing the run', () => {
         const dataProcessor = new DataProcessor(dataToProcess);
 
