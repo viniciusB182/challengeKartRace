@@ -3,7 +3,7 @@ import { duration } from 'moment';
 import { DataFormatter } from './../services/dataFormatter';
 
 describe('dataFormatter', () => {
-    it('should format an Duration object to View format', () => {
+    it('should format a Duration object to View format', () => {
         const durationToFormat = duration(999999);
 
         const dataFormatter = new DataFormatter();
