@@ -22,9 +22,11 @@ export class DataProcessor {
         const pilots = this.getAllPilots();
         const raceStartHour = this.getRaceStartHour();
 
+        //Recupera Melhores Momentos de cada piloto
         const pilotsHighLights: PilotHighLight[] = pilots.reduce((acc: PilotHighLight[], pilot: Pilot) => {
             const pilotRaceLaps = this.getPilotRaceLaps(pilot.pilotNumber, raceStartHour);
 
+            //Recupera valores dos Melhores Momentos
             const pilotbestLap = this.getPilotBestLap(pilotRaceLaps.raceLaps);
             const pilotRaceTotalTime = this.getPilotRaceTotalTime(pilotRaceLaps.raceLaps);
             const pilotVelocityAverage = this.getPilotRaceVelocityAverage(pilotRaceLaps.raceLaps);
@@ -38,12 +40,14 @@ export class DataProcessor {
                 totalNumberOfLaps: pilotRaceLaps.totalNumberOfLaps
             };
 
+            //Para cada Melhores Momentos recuperados, é ordenado por ordem de chegada e o tempo após o vencedor é setado
             return this.setPilotsTotalTimeAfterWinner(this.setRacePodium([...acc, hightLight]));
 
         }, [] as PilotHighLight[]);
 
         const bestRaceLap = this.getRaceBestLap(pilotsHighLights);
 
+        //Monta objeto de Melhores Momentos da Corrida unificando com melhores momentos de cada piloto
         const raceHighLight = {
             podium: pilotsHighLights,
             bestRaceLap: bestRaceLap
@@ -57,10 +61,12 @@ export class DataProcessor {
 	 * @param getRaceStartHour
 	 */
     private getRaceStartHour(): Duration {
+        //Subtrai o tempo da primeira volta da hora do log da primeira volta
         const firstLaps = this.raceLaps.filter(rl => rl.lapNumber === 1)
             .map(rl => rl.logHour.clone().subtract(rl.lapTime))
             .sort((a, b) => a.asMilliseconds() - b.asMilliseconds());
 
+        //Recupera hora de início da corrida com o resultado da subtração do primeiro competidor, pois o mesmo não leva tempo até a linha de largada
         return firstLaps[0];
     }
 
@@ -76,8 +82,10 @@ export class DataProcessor {
             if (prl.lapNumber === 1) {
                 const whenPassTheStartLine = prl.logHour.clone().subtract(prl.lapTime);
 
+                //Subtrai o log de quando passou a linha de largada pelo tempo de início da corrida
                 const timeToPassTheStartLine = whenPassTheStartLine.clone().subtract(raceStartHour);
 
+                //Subtrai tempo para passar a linha de largada do tempo total da primeira volta de cada piloto
                 prl.lapTime.subtract(timeToPassTheStartLine);
             }
         });
@@ -133,6 +141,7 @@ export class DataProcessor {
         pilotsHighLights.forEach(phl => {
             phl.arrivalPosition = pilotsHighLights.indexOf(phl) + 1;
 
+            //Informação válida apenas para os pilotos que concluíram a prova
             if (phl.totalNumberOfLaps === 4) {
                 phl.timeAfterTheWinner = phl.raceTotalTime.clone().subtract(pilotsHighLights[0].raceTotalTime);
             }
@@ -188,6 +197,7 @@ export class DataProcessor {
                 pilotNumber: raceLap.pilotNumber
             }
 
+            //Não repetir competidores no array
             if (acc.filter(p => p.pilotNumber === pilot.pilotNumber).length) {
                 return acc
             };

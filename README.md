@@ -1,6 +1,8 @@
 # KART RACE CHALLENGE
 
-Script que ao processar o arquivo de log das voltas da corrida em questão encontrado na pasta "logs" na raíz do projeto, é feita a ordenção dos competidores por ordem de chegada e são recuperados os melhores momentos da corrida e de cada piloto. 
+Script que ao processar o arquivo de log das voltas da corrida em questão encontrado na pasta "logs" na raíz do projeto, é feita a ordenação dos competidores por ordem de chegada e são recuperados os melhores momentos da corrida e de cada piloto. 
+
+**O Script leva em consideração o tempo gasto para cruzar a linha de largada.**
 
 ## Pré-requisitos
 
